@@ -1,0 +1,2677 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0A0A0F">
+<link rel="manifest" href="data:application/json,{%22name%22:%22BEAST%20MODE%22,%22short_name%22:%22BEAST%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%230A0A0F%22,%22theme_color%22:%22%230A0A0F%22}">
+<title>BEAST MODE - تطبيق النادي</title>
+</head>
+<body style="margin:0;padding:0;background:#0A0A0F;">
+<div id="root"></div>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ===== DATA & CONSTANTS =====
+const EXERCISES_DB = {
+  chest: {
+    name: "الصدر",
+    icon: "🔥",
+    color: "#FF4444",
+    exercises: [
+      { id: "bench", name: "بنش بريس مسطح (بار)", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "incline_bar", name: "بنش مائل بار", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "decline_bar", name: "ديكلاين بنش بار", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "db_bench", name: "بنش بريس دمبل", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "incline_db", name: "بنش مائل دمبل", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "decline_db", name: "ديكلاين دمبل", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "fly", name: "فلاي دمبل مسطح", type: "عزل - حر", sets: 3, reps: "10-15" },
+      { id: "incline_fly", name: "فلاي دمبل مائل", type: "عزل - حر", sets: 3, reps: "10-15" },
+      { id: "crossover", name: "كروس اوفر كيبل", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "low_cable", name: "كيبل سفلي للصدر العلوي", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "chest_press_m", name: "تشست بريس جهاز", type: "مركب - جهاز", sets: 3, reps: "10-12" },
+      { id: "pec_deck", name: "بك دك (فراشة)", type: "عزل - جهاز", sets: 3, reps: "12-15" },
+      { id: "pushup", name: "بوش اب", type: "وزن جسم", sets: 3, reps: "15-25" },
+      { id: "diamond_push", name: "دايموند بوش اب", type: "وزن جسم", sets: 3, reps: "10-15" },
+      { id: "wide_push", name: "بوش اب عريض", type: "وزن جسم", sets: 3, reps: "15-20" },
+      { id: "dip_chest", name: "ديبس صدر", type: "مركب - وزن جسم", sets: 3, reps: "8-15" },
+    ]
+  },
+  back: {
+    name: "الظهر",
+    icon: "⚡",
+    color: "#4488FF",
+    exercises: [
+      { id: "deadlift", name: "ديدلفت تقليدي", type: "مركب - حر", sets: 4, reps: "5-8" },
+      { id: "sumo_dead", name: "ديدلفت سومو", type: "مركب - حر", sets: 4, reps: "5-8" },
+      { id: "romanian", name: "رومانيان ديدلفت", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "barrow", name: "تجديف بار اوفر", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "pendlay", name: "تجديف بندلي", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "tbar", name: "تي بار رو", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "dbrow", name: "تجديف دمبل ذراع واحدة", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "pullup", name: "بول اب", type: "مركب - وزن جسم", sets: 4, reps: "6-12" },
+      { id: "chinup", name: "تشن اب", type: "مركب - وزن جسم", sets: 4, reps: "6-12" },
+      { id: "latpull", name: "لات بولداون عريض", type: "مركب - كيبل", sets: 3, reps: "8-12" },
+      { id: "closelat", name: "لات بولداون ضيق", type: "مركب - كيبل", sets: 3, reps: "10-12" },
+      { id: "cablerow", name: "كيبل رو جالس", type: "عزل - كيبل", sets: 3, reps: "10-15" },
+      { id: "face_pull_back", name: "فيس بول", type: "عزل - كيبل", sets: 3, reps: "15-20" },
+      { id: "straight_arm", name: "ستريت ارم بولداون", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "machine_row", name: "تجديف جهاز", type: "مركب - جهاز", sets: 3, reps: "10-12" },
+      { id: "hyper_ext", name: "هايبر اكستنشن", type: "عزل - وزن جسم", sets: 3, reps: "12-15" },
+      { id: "inverted_row", name: "انفرتد رو", type: "مركب - وزن جسم", sets: 3, reps: "10-15" },
+    ]
+  },
+  shoulders: {
+    name: "الاكتاف",
+    icon: "💥",
+    color: "#FF8800",
+    exercises: [
+      { id: "ohp_bar", name: "اوفرهيد بريس بار واقف", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "ohp_seated", name: "اوفرهيد بريس بار جالس", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "db_press", name: "شولدر بريس دمبل", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "arnold", name: "ارنولد بريس", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "lateral", name: "لاترال ريز دمبل", type: "عزل - حر", sets: 4, reps: "12-15" },
+      { id: "cable_lateral", name: "لاترال ريز كيبل", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "front", name: "فرونت ريز دمبل", type: "عزل - حر", sets: 3, reps: "12-15" },
+      { id: "front_bar", name: "فرونت ريز بار", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "facepull", name: "فيس بول", type: "عزل - كيبل", sets: 3, reps: "15-20" },
+      { id: "revfly", name: "ريفرس فلاي دمبل", type: "عزل - حر", sets: 3, reps: "12-15" },
+      { id: "revfly_cable", name: "ريفرس فلاي كيبل", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "upright_row", name: "ابرايت رو", type: "مركب - حر", sets: 3, reps: "10-12" },
+      { id: "shrug_db", name: "شرقز دمبل", type: "عزل - حر", sets: 4, reps: "12-15" },
+      { id: "shrug_bar", name: "شرقز بار", type: "عزل - حر", sets: 4, reps: "10-12" },
+      { id: "machine_press", name: "شولدر بريس جهاز", type: "مركب - جهاز", sets: 3, reps: "10-12" },
+      { id: "lateral_machine", name: "لاترال ريز جهاز", type: "عزل - جهاز", sets: 3, reps: "12-15" },
+      { id: "pike_push", name: "بايك بوش اب", type: "مركب - وزن جسم", sets: 3, reps: "8-12" },
+    ]
+  },
+  legs: {
+    name: "الارجل",
+    icon: "🦵",
+    color: "#44DD44",
+    exercises: [
+      { id: "squat", name: "باك سكوات بار", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "front_squat", name: "فرونت سكوات", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "goblet", name: "جوبلت سكوات دمبل", type: "مركب - حر", sets: 3, reps: "10-12" },
+      { id: "bulgarian", name: "بلغاريان سبلت سكوات", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "legpress", name: "ليج بريس", type: "مركب - جهاز", sets: 4, reps: "8-12" },
+      { id: "hack", name: "هاك سكوات جهاز", type: "مركب - جهاز", sets: 3, reps: "8-12" },
+      { id: "lunges_db", name: "لانجز دمبل", type: "مركب - حر", sets: 3, reps: "10-12" },
+      { id: "walking_lunge", name: "والكنج لانجز", type: "مركب - حر", sets: 3, reps: "12-16" },
+      { id: "step_up", name: "ستب اب دمبل", type: "مركب - حر", sets: 3, reps: "10-12" },
+      { id: "legcurl", name: "ليج كيرل جهاز", type: "عزل - جهاز", sets: 3, reps: "10-15" },
+      { id: "seated_curl", name: "سيتد ليج كيرل", type: "عزل - جهاز", sets: 3, reps: "10-15" },
+      { id: "legext", name: "ليج اكستنشن", type: "عزل - جهاز", sets: 3, reps: "10-15" },
+      { id: "hip_thrust", name: "هيب ثرست بار", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "rdl_db", name: "رومانيان ديدلفت دمبل", type: "مركب - حر", sets: 3, reps: "10-12" },
+      { id: "calf_standing", name: "كاف ريز واقف", type: "عزل - جهاز", sets: 4, reps: "15-20" },
+      { id: "calf_seated", name: "كاف ريز جالس", type: "عزل - جهاز", sets: 4, reps: "15-20" },
+      { id: "adductor", name: "اداكتور (داخلي)", type: "عزل - جهاز", sets: 3, reps: "12-15" },
+      { id: "abductor", name: "ابداكتور (خارجي)", type: "عزل - جهاز", sets: 3, reps: "12-15" },
+      { id: "sissy_squat", name: "سيسي سكوات", type: "عزل - وزن جسم", sets: 3, reps: "10-15" },
+    ]
+  },
+  biceps: {
+    name: "باي",
+    icon: "💪",
+    color: "#DD44DD",
+    exercises: [
+      { id: "barcurl", name: "باي كيرل بار مستقيم", type: "عزل - حر", sets: 3, reps: "8-12" },
+      { id: "ezcurl", name: "باي كيرل بار EZ", type: "عزل - حر", sets: 3, reps: "8-12" },
+      { id: "db_curl", name: "دمبل كيرل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "hammer", name: "هامر كيرل دمبل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "incline_curl", name: "انكلاين كيرل دمبل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "concentration", name: "كونسنتريشن كيرل", type: "عزل - حر", sets: 3, reps: "10-15" },
+      { id: "preacher", name: "بريتشر كيرل بار", type: "عزل - حر", sets: 3, reps: "8-12" },
+      { id: "preacher_db", name: "بريتشر كيرل دمبل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "cable_curl", name: "كيبل كيرل", type: "عزل - كيبل", sets: 3, reps: "10-15" },
+      { id: "rope_hammer", name: "هامر كيرل روب كيبل", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "spider_curl", name: "سبايدر كيرل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "machine_curl", name: "باي كيرل جهاز", type: "عزل - جهاز", sets: 3, reps: "10-15" },
+      { id: "21s", name: "كيرل 21 (7-7-7)", type: "عزل - حر", sets: 3, reps: "21" },
+    ]
+  },
+  triceps: {
+    name: "تراي",
+    icon: "🔱",
+    color: "#44DDDD",
+    exercises: [
+      { id: "close_bench", name: "كلوز جريب بنش بريس", type: "مركب - حر", sets: 4, reps: "8-12" },
+      { id: "skull", name: "سكل كراشر بار EZ", type: "عزل - حر", sets: 3, reps: "8-12" },
+      { id: "skull_db", name: "سكل كراشر دمبل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "overhead_db", name: "اوفرهيد اكستنشن دمبل", type: "عزل - حر", sets: 3, reps: "10-12" },
+      { id: "overhead_bar", name: "اوفرهيد اكستنشن بار", type: "عزل - حر", sets: 3, reps: "8-12" },
+      { id: "kickback", name: "تراي كيك باك دمبل", type: "عزل - حر", sets: 3, reps: "12-15" },
+      { id: "pushdown_bar", name: "بوشداون بار كيبل", type: "عزل - كيبل", sets: 3, reps: "10-15" },
+      { id: "pushdown_rope", name: "بوشداون روب كيبل", type: "عزل - كيبل", sets: 3, reps: "10-15" },
+      { id: "overhead_cable", name: "اوفرهيد اكستنشن كيبل", type: "عزل - كيبل", sets: 3, reps: "10-15" },
+      { id: "dips", name: "ديبس", type: "مركب - وزن جسم", sets: 3, reps: "8-15" },
+      { id: "bench_dips", name: "بنش ديبس", type: "وزن جسم", sets: 3, reps: "12-20" },
+      { id: "diamond_tri", name: "دايموند بوش اب", type: "وزن جسم", sets: 3, reps: "10-15" },
+      { id: "machine_tri", name: "تراي اكستنشن جهاز", type: "عزل - جهاز", sets: 3, reps: "10-15" },
+    ]
+  },
+  core: {
+    name: "البطن",
+    icon: "🎯",
+    color: "#FFDD00",
+    exercises: [
+      { id: "plank", name: "بلانك", type: "ثبات", sets: 3, reps: "30-60 ثانية" },
+      { id: "side_plank", name: "سايد بلانك", type: "ثبات", sets: 3, reps: "30-45 ثانية" },
+      { id: "crunch", name: "كرنشز", type: "عزل", sets: 3, reps: "15-20" },
+      { id: "reverse_crunch", name: "ريفرس كرنش", type: "عزل", sets: 3, reps: "12-15" },
+      { id: "bicycle", name: "بايسكل كرنش", type: "عزل", sets: 3, reps: "20-30" },
+      { id: "legraise", name: "ليج ريز (مستلقي)", type: "عزل", sets: 3, reps: "12-15" },
+      { id: "hanging_leg", name: "هانجنج ليج ريز", type: "عزل - معلق", sets: 3, reps: "10-15" },
+      { id: "hanging_knee", name: "هانجنج ني ريز", type: "عزل - معلق", sets: 3, reps: "12-15" },
+      { id: "russian", name: "روشن تويست", type: "عزل", sets: 3, reps: "20-30" },
+      { id: "russian_weighted", name: "روشن تويست بوزن", type: "عزل - حر", sets: 3, reps: "15-20" },
+      { id: "cablecrunch", name: "كيبل كرنش", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "woodchop", name: "وود تشوب كيبل", type: "عزل - كيبل", sets: 3, reps: "12-15" },
+      { id: "pallof", name: "بالوف بريس كيبل", type: "ثبات - كيبل", sets: 3, reps: "12-15" },
+      { id: "ab_wheel", name: "اب ويل رولاوت", type: "عزل", sets: 3, reps: "8-12" },
+      { id: "decline_sit", name: "ديكلاين سيت اب", type: "عزل", sets: 3, reps: "15-20" },
+      { id: "vup", name: "في اب (V-Up)", type: "عزل", sets: 3, reps: "12-15" },
+      { id: "mountain", name: "ماونتن كلايمر", type: "كارديو + بطن", sets: 3, reps: "30-45 ثانية" },
+      { id: "dead_bug", name: "ديد بق", type: "ثبات", sets: 3, reps: "12-16" },
+      { id: "flutter", name: "فلاتر كيكس", type: "عزل", sets: 3, reps: "20-30" },
+      { id: "toe_touch", name: "تو تاتش كرنش", type: "عزل", sets: 3, reps: "15-20" },
+      { id: "dragon_flag", name: "دراقون فلاج", type: "متقدم", sets: 3, reps: "5-10" },
+      { id: "l_sit", name: "ال سيت", type: "ثبات - متقدم", sets: 3, reps: "15-30 ثانية" },
+    ]
+  },
+  freeweight: {
+    name: "تمارين حرة مركبة",
+    icon: "🏋️",
+    color: "#FF5577",
+    exercises: [
+      { id: "fw_squat", name: "باك سكوات", type: "مركب - حر", sets: 5, reps: "5-8" },
+      { id: "fw_deadlift", name: "ديدلفت", type: "مركب - حر", sets: 5, reps: "3-6" },
+      { id: "fw_bench", name: "بنش بريس", type: "مركب - حر", sets: 5, reps: "5-8" },
+      { id: "fw_ohp", name: "اوفرهيد بريس", type: "مركب - حر", sets: 4, reps: "5-8" },
+      { id: "fw_row", name: "بنت اوفر رو", type: "مركب - حر", sets: 4, reps: "6-10" },
+      { id: "fw_clean", name: "باور كلين", type: "اوليمبي - حر", sets: 4, reps: "3-5" },
+      { id: "fw_snatch", name: "دمبل سناتش", type: "اوليمبي - حر", sets: 3, reps: "5-8" },
+      { id: "fw_thruster", name: "ثرستر", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "fw_farmers", name: "فارمرز ووك", type: "مركب - حر", sets: 3, reps: "30-40 متر" },
+      { id: "fw_turkish", name: "تركش جت اب", type: "مركب - حر", sets: 3, reps: "5 لكل جهة" },
+      { id: "fw_clean_press", name: "كلين اند بريس", type: "مركب - حر", sets: 4, reps: "5-8" },
+      { id: "fw_sumo_dead", name: "سومو ديدلفت", type: "مركب - حر", sets: 4, reps: "5-8" },
+      { id: "fw_zercher", name: "زيرتشر سكوات", type: "مركب - حر", sets: 3, reps: "6-10" },
+      { id: "fw_floor_press", name: "فلور بريس", type: "مركب - حر", sets: 3, reps: "8-12" },
+      { id: "fw_landmine", name: "لاندماين بريس", type: "مركب - حر", sets: 3, reps: "8-12" },
+    ]
+  }
+};
+
+const SPLIT_TEMPLATES = {
+  ppl: { name: "Push/Pull/Legs", days: ["Push", "Pull", "Legs", "Push", "Pull", "Legs", "راحة"] },
+  upper_lower: { name: "Upper/Lower", days: ["Upper", "Lower", "راحة", "Upper", "Lower", "راحة", "راحة"] },
+  bro: { name: "Bro Split", days: ["صدر", "ظهر", "اكتاف", "ارجل", "ذراع", "راحة", "راحة"] },
+  full: { name: "Full Body", days: ["Full Body", "راحة", "Full Body", "راحة", "Full Body", "راحة", "راحة"] },
+};
+
+const WEEK_DAYS = ["الاحد", "الاثنين", "الثلاثاء", "الاربعاء", "الخميس", "الجمعة", "السبت"];
+
+// ===== FOOD DATABASE (per 100g) =====
+const FOOD_DB = [
+  // بروتين
+  { id: "f1", name: "صدور دجاج مشوي", cat: "بروتين", cal: 165, p: 31, c: 0, f: 3.6, icon: "🍗" },
+  { id: "f2", name: "صدور دجاج مسلوق", cat: "بروتين", cal: 150, p: 30, c: 0, f: 3, icon: "🍗" },
+  { id: "f3", name: "فخذ دجاج بدون جلد", cat: "بروتين", cal: 177, p: 24, c: 0, f: 8, icon: "🍗" },
+  { id: "f4", name: "ستيك لحم بقر", cat: "بروتين", cal: 271, p: 26, c: 0, f: 18, icon: "🥩" },
+  { id: "f5", name: "لحم بقر مفروم 95%", cat: "بروتين", cal: 137, p: 28, c: 0, f: 5, icon: "🥩" },
+  { id: "f6", name: "لحم بقر مفروم 80%", cat: "بروتين", cal: 254, p: 17, c: 0, f: 20, icon: "🥩" },
+  { id: "f7", name: "سمك تونة معلب", cat: "بروتين", cal: 116, p: 26, c: 0, f: 1, icon: "🐟" },
+  { id: "f8", name: "سمك سلمون", cat: "بروتين", cal: 208, p: 20, c: 0, f: 13, icon: "🐟" },
+  { id: "f9", name: "سمك تلابيا", cat: "بروتين", cal: 128, p: 26, c: 0, f: 2.7, icon: "🐟" },
+  { id: "f10", name: "ربيان (جمبري)", cat: "بروتين", cal: 99, p: 24, c: 0.2, f: 0.3, icon: "🦐" },
+  { id: "f11", name: "بيضة كاملة (50 جم)", cat: "بروتين", cal: 155, p: 13, c: 1.1, f: 11, icon: "🥚" },
+  { id: "f12", name: "بياض بيض (100 جم)", cat: "بروتين", cal: 52, p: 11, c: 0.7, f: 0.2, icon: "🥚" },
+  { id: "f13", name: "صدر ديك رومي", cat: "بروتين", cal: 135, p: 30, c: 0, f: 1, icon: "🍗" },
+  { id: "f14", name: "كبدة دجاج", cat: "بروتين", cal: 172, p: 26, c: 1, f: 6, icon: "🍖" },
+  { id: "f15", name: "لحم غنم", cat: "بروتين", cal: 282, p: 25, c: 0, f: 20, icon: "🥩" },
+  // كارب
+  { id: "f20", name: "ارز ابيض مطبوخ", cat: "كارب", cal: 130, p: 2.7, c: 28, f: 0.3, icon: "🍚" },
+  { id: "f21", name: "ارز بني مطبوخ", cat: "كارب", cal: 123, p: 2.7, c: 26, f: 1, icon: "🍚" },
+  { id: "f22", name: "شوفان جاف", cat: "كارب", cal: 389, p: 17, c: 66, f: 7, icon: "🥣" },
+  { id: "f23", name: "بطاطا حلوة مشوية", cat: "كارب", cal: 90, p: 2, c: 21, f: 0.1, icon: "🍠" },
+  { id: "f24", name: "بطاطس مسلوقة", cat: "كارب", cal: 87, p: 1.9, c: 20, f: 0.1, icon: "🥔" },
+  { id: "f25", name: "خبز اسمر (شريحة 30 جم)", cat: "كارب", cal: 247, p: 13, c: 41, f: 3.4, icon: "🍞" },
+  { id: "f26", name: "خبز ابيض (شريحة 30 جم)", cat: "كارب", cal: 265, p: 9, c: 49, f: 3.2, icon: "🍞" },
+  { id: "f27", name: "معكرونة مطبوخة", cat: "كارب", cal: 131, p: 5, c: 25, f: 1.1, icon: "🍝" },
+  { id: "f28", name: "كينوا مطبوخة", cat: "كارب", cal: 120, p: 4.4, c: 21, f: 1.9, icon: "🥗" },
+  { id: "f29", name: "خبز تورتيلا قمح", cat: "كارب", cal: 312, p: 8, c: 52, f: 8, icon: "🫓" },
+  { id: "f30", name: "موز (حبة 120 جم)", cat: "كارب", cal: 89, p: 1.1, c: 23, f: 0.3, icon: "🍌" },
+  { id: "f31", name: "تمر (100 جم)", cat: "كارب", cal: 277, p: 1.8, c: 75, f: 0.2, icon: "🌴" },
+  { id: "f32", name: "عسل", cat: "كارب", cal: 304, p: 0.3, c: 82, f: 0, icon: "🍯" },
+  // دهون صحية
+  { id: "f40", name: "زيت زيتون (ملعقة 15 مل)", cat: "دهون", cal: 884, p: 0, c: 0, f: 100, icon: "🫒" },
+  { id: "f41", name: "زبدة فول سوداني", cat: "دهون", cal: 588, p: 25, c: 20, f: 50, icon: "🥜" },
+  { id: "f42", name: "لوز", cat: "دهون", cal: 579, p: 21, c: 22, f: 50, icon: "🥜" },
+  { id: "f43", name: "جوز", cat: "دهون", cal: 654, p: 15, c: 14, f: 65, icon: "🥜" },
+  { id: "f44", name: "افوكادو", cat: "دهون", cal: 160, p: 2, c: 9, f: 15, icon: "🥑" },
+  { id: "f45", name: "كاجو", cat: "دهون", cal: 553, p: 18, c: 30, f: 44, icon: "🥜" },
+  { id: "f46", name: "بذور شيا", cat: "دهون", cal: 486, p: 17, c: 42, f: 31, icon: "🌱" },
+  { id: "f47", name: "بذور كتان", cat: "دهون", cal: 534, p: 18, c: 29, f: 42, icon: "🌱" },
+  { id: "f48", name: "زبدة لوز", cat: "دهون", cal: 614, p: 21, c: 19, f: 56, icon: "🥜" },
+  // البان
+  { id: "f50", name: "حليب كامل الدسم", cat: "البان", cal: 61, p: 3.2, c: 4.8, f: 3.3, icon: "🥛" },
+  { id: "f51", name: "حليب قليل الدسم", cat: "البان", cal: 42, p: 3.4, c: 5, f: 1, icon: "🥛" },
+  { id: "f52", name: "زبادي يوناني", cat: "البان", cal: 97, p: 9, c: 3.6, f: 5, icon: "🥛" },
+  { id: "f53", name: "زبادي قليل الدسم", cat: "البان", cal: 63, p: 5.3, c: 7.7, f: 1.6, icon: "🥛" },
+  { id: "f54", name: "جبنة قريش", cat: "البان", cal: 72, p: 12, c: 2.7, f: 1, icon: "🧀" },
+  { id: "f55", name: "جبنة شيدر", cat: "البان", cal: 403, p: 25, c: 1.3, f: 33, icon: "🧀" },
+  { id: "f56", name: "جبنة موزاريلا", cat: "البان", cal: 280, p: 28, c: 3.1, f: 17, icon: "🧀" },
+  // مكملات
+  { id: "f60", name: "واي بروتين (سكوب 30 جم)", cat: "مكملات", cal: 120, p: 24, c: 3, f: 1.5, icon: "💊" },
+  { id: "f61", name: "كازين بروتين (سكوب 30 جم)", cat: "مكملات", cal: 120, p: 24, c: 3, f: 1, icon: "💊" },
+  { id: "f62", name: "بروتين بار متوسط", cat: "مكملات", cal: 200, p: 20, c: 22, f: 7, icon: "💊" },
+  // خضروات
+  { id: "f70", name: "بروكلي", cat: "خضروات", cal: 34, p: 2.8, c: 7, f: 0.4, icon: "🥦" },
+  { id: "f71", name: "سبانخ", cat: "خضروات", cal: 23, p: 2.9, c: 3.6, f: 0.4, icon: "🥬" },
+  { id: "f72", name: "خيار", cat: "خضروات", cal: 15, p: 0.7, c: 3.6, f: 0.1, icon: "🥒" },
+  { id: "f73", name: "طماطم", cat: "خضروات", cal: 18, p: 0.9, c: 3.9, f: 0.2, icon: "🍅" },
+  { id: "f74", name: "فلفل رومي", cat: "خضروات", cal: 31, p: 1, c: 6, f: 0.3, icon: "🫑" },
+  { id: "f75", name: "جزر", cat: "خضروات", cal: 41, p: 0.9, c: 10, f: 0.2, icon: "🥕" },
+  // وجبات سريعة شائعة
+  { id: "f80", name: "كبسة دجاج (طبق)", cat: "وجبات", cal: 350, p: 25, c: 40, f: 10, icon: "🍛" },
+  { id: "f81", name: "كبسة لحم (طبق)", cat: "وجبات", cal: 420, p: 22, c: 42, f: 18, icon: "🍛" },
+  { id: "f82", name: "مندي دجاج (طبق)", cat: "وجبات", cal: 380, p: 28, c: 38, f: 12, icon: "🍛" },
+  { id: "f83", name: "شاورما دجاج (ساندويتش)", cat: "وجبات", cal: 430, p: 25, c: 40, f: 18, icon: "🌯" },
+  { id: "f84", name: "فول مدمس (طبق)", cat: "وجبات", cal: 187, p: 13, c: 24, f: 4, icon: "🫘" },
+  { id: "f85", name: "حمص بالطحينة (100 جم)", cat: "وجبات", cal: 166, p: 8, c: 14, f: 10, icon: "🫘" },
+  { id: "f86", name: "فلافل (5 حبات)", cat: "وجبات", cal: 333, p: 13, c: 32, f: 18, icon: "🧆" },
+  { id: "f87", name: "سلطة سيزر بالدجاج", cat: "وجبات", cal: 180, p: 15, c: 8, f: 10, icon: "🥗" },
+  { id: "f88", name: "برجر لحم (بدون خبز)", cat: "وجبات", cal: 250, p: 26, c: 0, f: 17, icon: "🍔" },
+  { id: "f89", name: "برجر دجاج مشوي", cat: "وجبات", cal: 350, p: 28, c: 30, f: 12, icon: "🍔" },
+  { id: "f90", name: "معصوب", cat: "وجبات", cal: 380, p: 8, c: 55, f: 15, icon: "🍯" },
+];
+
+const FOOD_CATEGORIES = ["الكل", "بروتين", "كارب", "دهون", "البان", "مكملات", "خضروات", "وجبات"];
+
+// ===== UTILITY =====
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+// ===== STYLES =====
+const CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg-primary: #0A0A0F;
+  --bg-secondary: #12121A;
+  --bg-card: #1A1A2E;
+  --bg-card-hover: #22223A;
+  --bg-input: #16162A;
+  --accent: #FF3E3E;
+  --accent-glow: rgba(255,62,62,0.3);
+  --accent2: #FF8C00;
+  --accent3: #00D4FF;
+  --text: #EEEEF0;
+  --text-dim: #8888AA;
+  --text-muted: #555570;
+  --border: #2A2A40;
+  --success: #00DD66;
+  --warning: #FFaa00;
+  --danger: #FF3E3E;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body, #root {
+  font-family: 'Tajawal', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text);
+  direction: rtl;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Background Pattern */
+.app-bg {
+  position: fixed;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(255,62,62,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(0,212,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(255,140,0,0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app-container {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+
+/* Header */
+.header {
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -20%;
+  width: 140%;
+  height: 200%;
+  background: linear-gradient(135deg, rgba(255,62,62,0.1) 0%, transparent 40%, rgba(0,212,255,0.05) 100%);
+  pointer-events: none;
+}
+
+.logo-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #FF3E3E, #FF8C00, #FF3E3E);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradShift 3s ease infinite;
+  position: relative;
+  text-shadow: 0 0 40px rgba(255,62,62,0.3);
+}
+
+@keyframes gradShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.logo-sub {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: 4px;
+  letter-spacing: 2px;
+}
+
+/* Navigation */
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(to top, rgba(10,10,15,0.98), rgba(10,10,15,0.92));
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px;
+  z-index: 100;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  min-width: 56px;
+}
+
+.nav-item.active {
+  color: var(--accent);
+  background: rgba(255,62,62,0.1);
+}
+
+.nav-item .nav-icon { font-size: 22px; }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin: 10px 16px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.card:hover::before { opacity: 1; }
+
+.card-glow {
+  box-shadow: 0 0 30px rgba(255,62,62,0.1), var(--shadow);
+}
+
+/* Section Title */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 16px 8px;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.section-title .icon {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #FF3E3E, #CC2200);
+  color: white;
+  box-shadow: 0 4px 20px rgba(255,62,62,0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(255,62,62,0.4);
+}
+
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #cc0000, #880000);
+  color: white;
+}
+
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+
+.btn-full { width: 100%; }
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 15px;
+  transition: all 0.3s;
+  direction: rtl;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+/* Progress Bars */
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-input);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Stat Boxes */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 10px 16px;
+}
+
+.stat-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-box .stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  letter-spacing: 1px;
+}
+
+.stat-box .stat-label {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Muscle Card */
+.muscle-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin: 6px 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.muscle-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+  transform: translateX(-4px);
+}
+
+.muscle-icon {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.muscle-info { flex: 1; }
+.muscle-name { font-weight: 700; font-size: 16px; }
+.muscle-count { font-size: 12px; color: var(--text-dim); }
+
+/* Exercise Row */
+.exercise-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.exercise-row:hover { border-color: var(--border); }
+
+.exercise-check {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.exercise-check.checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.exercise-name { flex: 1; font-weight: 600; font-size: 14px; }
+.exercise-type {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  color: var(--text-dim);
+}
+
+/* Set Logger */
+.set-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 60px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.set-num {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-input);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.set-num.done { background: var(--accent); color: white; }
+
+.set-input {
+  padding: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Tajawal', sans-serif;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+}
+
+.set-input:focus { outline: none; border-color: var(--accent); }
+
+.set-done-btn {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.set-done-btn.completed {
+  background: var(--success);
+  border-color: var(--success);
+  color: white;
+}
+
+/* Timer */
+.timer-display {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 72px;
+  text-align: center;
+  letter-spacing: 4px;
+  color: var(--text);
+  text-shadow: 0 0 30px var(--accent-glow);
+}
+
+.timer-controls {
+  display: flex; justify-content: center; gap: 12px; margin-top: 16px;
+}
+
+/* Nutrition */
+.macro-bar {
+  margin: 8px 0;
+}
+
+.macro-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.macro-name { font-weight: 700; }
+.macro-val { color: var(--text-dim); }
+
+/* Meal Entry */
+.meal-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+}
+
+.meal-entry .meal-name { flex: 1; font-weight: 600; font-size: 14px; }
+.meal-entry .meal-cals { font-size: 13px; color: var(--accent2); font-weight: 700; }
+
+.delete-btn {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,0,0,0.1);
+  border: none;
+  border-radius: 6px;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover { background: rgba(255,0,0,0.2); }
+
+/* Body Stats */
+.measurement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Modal/Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.modal-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 0 auto 20px;
+}
+
+/* RPE Selector */
+.rpe-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.rpe-btn {
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-dim);
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.rpe-btn.selected {
+  border-color: var(--accent);
+  background: rgba(255,62,62,0.15);
+  color: var(--accent);
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Select */
+select.input {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Fade In Animation */
+.fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Streak */
+.streak-fire {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba(255,140,0,0.15), rgba(255,62,62,0.15));
+  border: 1px solid rgba(255,140,0,0.3);
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin: 10px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: 'Tajawal', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin: 4px;
+}
+
+.badge .badge-icon { font-size: 18px; }
+
+.water-drop {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 12px;
+}
+
+.drop {
+  width: 36px; height: 36px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid var(--border);
+  background: var(--bg-input);
+}
+
+.drop.filled {
+  background: linear-gradient(135deg, #0088FF, #00CCFF);
+  border-color: #00AAFF;
+}
+
+.drop span { transform: rotate(45deg); }
+
+/* Workout Timer Big */
+.workout-timer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin: 0 16px;
+  background: linear-gradient(90deg, rgba(255,62,62,0.1), rgba(255,140,0,0.1));
+  border: 1px solid rgba(255,62,62,0.2);
+  border-radius: var(--radius-sm);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+
+/* Chart */
+.mini-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+  padding: 8px 0;
+}
+
+.chart-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.5s ease;
+  min-width: 8px;
+}
+
+/* Calendar */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin: 8px 16px;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  position: relative;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  transition: all 0.2s;
+}
+
+.cal-day.workout {
+  background: linear-gradient(135deg, rgba(255,62,62,0.2), rgba(255,140,0,0.2));
+  border-color: rgba(255,62,62,0.4);
+  color: var(--accent);
+}
+
+.cal-day.today {
+  border-color: var(--accent3);
+  box-shadow: 0 0 10px rgba(0,212,255,0.3);
+}
+
+.cal-day.rest {
+  background: var(--bg-input);
+  color: var(--text-muted);
+}
+
+.cal-day .cal-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 2px;
+}
+
+/* Level Bar */
+.level-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.level-icon {
+  font-size: 28px;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 12px;
+}
+
+.level-info { flex: 1; }
+
+/* Active Workout Mode */
+.active-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.active-header {
+  padding: 20px;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(255,62,62,0.1), transparent);
+}
+
+.active-timer {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 0 0 30px rgba(255,62,62,0.4);
+}
+
+.active-quote {
+  font-size: 14px;
+  color: var(--accent2);
+  font-weight: 700;
+  margin-top: 6px;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.active-exercise-card {
+  margin: 12px 20px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: 0 0 30px rgba(255,62,62,0.15);
+}
+
+.active-exercise-name {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.active-exercise-detail {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.active-progress {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 12px 20px;
+  flex-wrap: wrap;
+}
+
+.active-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  transition: all 0.3s;
+}
+
+.active-dot.done {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(255,62,62,0.5);
+}
+
+.active-dot.current {
+  border-color: var(--accent3);
+  box-shadow: 0 0 8px rgba(0,212,255,0.5);
+  animation: pulse 1s ease infinite;
+}
+
+/* Chart bars */
+.chart-container {
+  padding: 16px;
+  margin: 8px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding-top: 8px;
+}
+
+.chart-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart-bar-v {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.6s ease;
+  min-height: 4px;
+}
+
+.chart-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.chart-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+/* AI Card */
+.ai-card {
+  margin: 8px 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.05), rgba(255,62,62,0.05));
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent3), var(--accent), var(--accent2));
+}
+`;
+
+// ===== COMPONENTS =====
+
+// Rest Timer Component
+function RestTimer({ onClose }) {
+  const [time, setTime] = useState(90);
+  const [isRunning, setIsRunning] = useState(false);
+  const [customTime, setCustomTime] = useState(90);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (isRunning && time > 0) {
+      intervalRef.current = setInterval(() => setTime(t => t - 1), 1000);
+    } else if (time === 0) {
+      setIsRunning(false);
+    }
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning, time]);
+
+  const presets = [30, 60, 90, 120, 180];
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <h3 style={{ textAlign: "center", marginBottom: 24, fontSize: 20, fontWeight: 800 }}>⏱️ مؤقت الراحة</h3>
+        <div className="timer-display" style={{ color: time <= 5 && time > 0 ? '#FF3E3E' : 'inherit' }}>
+          {formatTime(time)}
+        </div>
+        <div className="timer-controls">
+          {!isRunning ? (
+            <button className="btn btn-primary" onClick={() => { setIsRunning(true); }}>▶ ابدأ</button>
+          ) : (
+            <button className="btn btn-secondary" onClick={() => setIsRunning(false)}>⏸ وقف</button>
+          )}
+          <button className="btn btn-secondary" onClick={() => { setIsRunning(false); setTime(customTime); }}>↺ اعادة</button>
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 20, flexWrap: "wrap" }}>
+          {presets.map(p => (
+            <button key={p} className={`btn btn-sm ${customTime === p ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => { setCustomTime(p); setTime(p); setIsRunning(false); }}>
+              {p}ث
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Set Logger Component
+function SetLogger({ exercise, onSave, onClose }) {
+  const defaultSets = Array.from({ length: exercise.sets }, (_, i) => ({
+    num: i + 1, weight: "", reps: "", done: false
+  }));
+  const [sets, setSets] = useState(defaultSets);
+  const [rpe, setRpe] = useState(null);
+  const [notes, setNotes] = useState("");
+  const [showTimer, setShowTimer] = useState(false);
+
+  const toggleSet = (idx) => {
+    const updated = [...sets];
+    updated[idx].done = !updated[idx].done;
+    setSets(updated);
+    if (updated[idx].done) setShowTimer(true);
+  };
+
+  const updateSet = (idx, field, val) => {
+    const updated = [...sets];
+    updated[idx][field] = val;
+    setSets(updated);
+  };
+
+  const addSet = () => {
+    setSets([...sets, { num: sets.length + 1, weight: "", reps: "", done: false }]);
+  };
+
+  const completedSets = sets.filter(s => s.done).length;
+  const totalVolume = sets.filter(s => s.done).reduce((acc, s) => acc + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-handle" />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 800 }}>{exercise.name}</h3>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span className="tag" style={{ background: "rgba(255,62,62,0.1)", color: "#FF3E3E" }}>{exercise.type}</span>
+            <button className="btn btn-secondary btn-sm" style={{ padding: "6px 12px", fontSize: 16 }} onClick={onClose}>✕</button>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          <div className="stat-box" style={{ flex: 1, padding: 10 }}>
+            <div className="stat-val" style={{ fontSize: 22, color: "#00DD66" }}>{completedSets}/{sets.length}</div>
+            <div className="stat-label">مجموعات</div>
+          </div>
+          <div className="stat-box" style={{ flex: 1, padding: 10 }}>
+            <div className="stat-val" style={{ fontSize: 22, color: "#FF8C00" }}>{totalVolume}</div>
+            <div className="stat-label">حجم كلي</div>
+          </div>
+        </div>
+
+        <div className="set-row" style={{ fontWeight: 700, color: "var(--text-dim)", fontSize: 12 }}>
+          <span style={{ textAlign: "center" }}>#</span>
+          <span style={{ textAlign: "center" }}>الوزن (كجم)</span>
+          <span style={{ textAlign: "center" }}>التكرارات</span>
+          <span style={{ textAlign: "center" }}>✓</span>
+        </div>
+
+        {sets.map((s, i) => (
+          <div className="set-row" key={i}>
+            <div className={`set-num ${s.done ? 'done' : ''}`}>{s.num}</div>
+            <input className="set-input" type="number" placeholder="0" value={s.weight}
+              onChange={e => updateSet(i, "weight", e.target.value)} />
+            <input className="set-input" type="number" placeholder={exercise.reps} value={s.reps}
+              onChange={e => updateSet(i, "reps", e.target.value)} />
+            <button className={`set-done-btn ${s.done ? 'completed' : ''}`} onClick={() => toggleSet(i)}>
+              {s.done ? "✓" : "○"}
+            </button>
+          </div>
+        ))}
+
+        <button className="btn btn-secondary btn-sm btn-full" style={{ marginTop: 8 }} onClick={addSet}>
+          + اضافة مجموعة
+        </button>
+
+        <div style={{ marginTop: 16 }}>
+          <div className="input-label">مستوى الصعوبة (RPE)</div>
+          <div className="rpe-grid">
+            {[6, 7, 8, 9, 10].map(r => (
+              <button key={r} className={`rpe-btn ${rpe === r ? 'selected' : ''}`} onClick={() => setRpe(r)}>
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <div className="input-label">ملاحظات</div>
+          <input className="input" placeholder="مثال: شعرت بألم في الكتف..." value={notes} onChange={e => setNotes(e.target.value)} />
+        </div>
+
+        <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+          <button className="btn btn-primary" style={{ flex: 2 }} onClick={() => onSave({ sets, rpe, notes, exercise })}>
+            💾 حفظ
+          </button>
+          <button className="btn btn-secondary" style={{ flex: 1 }} onClick={onClose}>
+            → رجوع
+          </button>
+        </div>
+
+        {showTimer && <RestTimer onClose={() => setShowTimer(false)} />}
+      </div>
+    </div>
+  );
+}
+
+// ===== MAIN APP =====
+function GymBeastApp() {
+  // Navigation
+  const [page, setPage] = useState("home");
+
+  // Workout state
+  const [workoutActive, setWorkoutActive] = useState(false);
+  const [workoutTime, setWorkoutTime] = useState(0);
+  const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [selectedExercise, setSelectedExercise] = useState(null);
+  const [workoutLog, setWorkoutLog] = useState([]);
+  const [showTimer, setShowTimer] = useState(false);
+
+  // Nutrition state
+  const [userProfile, setUserProfile] = useState({
+    weight: 80, height: 175, age: 25, gender: "male", activity: "moderate", goal: "maintain"
+  });
+  const [meals, setMeals] = useState([]);
+  const [mealForm, setMealForm] = useState({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+  const [waterCount, setWaterCount] = useState(0);
+  const [foodSearch, setFoodSearch] = useState("");
+  const [foodCat, setFoodCat] = useState("الكل");
+  const [showFoodPicker, setShowFoodPicker] = useState(false);
+  const [foodGrams, setFoodGrams] = useState(100);
+
+  // Body state
+  const [bodyWeight, setBodyWeight] = useState([]);
+  const [measurements, setMeasurements] = useState({ chest: "", waist: "", arm: "", thigh: "", shoulder: "" });
+  const [newWeightInput, setNewWeightInput] = useState("");
+
+  // Tab states
+  const [nutritionTab, setNutritionTab] = useState("meals");
+  const [bodyTab, setBodyTab] = useState("weight");
+  const [selectedProgram, setSelectedProgram] = useState(null);
+
+  // Gamification
+  const [streak, setStreak] = useState(7);
+  const [totalWorkouts, setTotalWorkouts] = useState(42);
+  const [xp, setXp] = useState(2150);
+
+  // Calendar & History
+  const [workoutHistory, setWorkoutHistory] = useState(() => {
+    const h = {};
+    const today = new Date();
+    for (let i = 1; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      if (i !== 3 && i !== 7) {
+        h[d.toISOString().split('T')[0]] = { muscles: ["صدر", "ظهر"].slice(0, i % 2 + 1), duration: 40 + i * 5, exercises: i + 2 };
+      }
+    }
+    return h;
+  });
+
+  // Active Workout Mode
+  const [activeMode, setActiveMode] = useState(false);
+  const [currentExIndex, setCurrentExIndex] = useState(0);
+
+  // Motivational quotes
+  const QUOTES = [
+    "💀 الألم مؤقت.. المجد دائم!",
+    "🔥 ما في وقت للراحة يا وحش!",
+    "⚡ كل تكرار يقربك من هدفك!",
+    "💪 الحديد ما يرحم الضعيف!",
+    "🏆 انت هنا عشان تكون الأفضل!",
+    "🎯 ركز.. التمرين الحقيقي يبدأ لما تتعب!",
+    "🦁 كن وحش التمرين!",
+    "⭐ اليوم أقوى من أمس!",
+  ];
+
+  // Workout timer
+  const timerRef = useRef(null);
+  useEffect(() => {
+    if (workoutActive) {
+      timerRef.current = setInterval(() => setWorkoutTime(t => t + 1), 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [workoutActive]);
+
+  // Nutrition Calculations
+  const calcBMR = useMemo(() => {
+    const { weight, height, age, gender } = userProfile;
+    if (gender === "male") return 10 * weight + 6.25 * height - 5 * age + 5;
+    return 10 * weight + 6.25 * height - 5 * age - 161;
+  }, [userProfile]);
+
+  const activityMultipliers = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 };
+  const goalAdjust = { cut: -500, maintain: 0, bulk: 400 };
+
+  const tdee = useMemo(() => Math.round(calcBMR * (activityMultipliers[userProfile.activity] || 1.55)), [calcBMR, userProfile.activity]);
+  const targetCalories = useMemo(() => tdee + (goalAdjust[userProfile.goal] || 0), [tdee, userProfile.goal]);
+
+  const macroTargets = useMemo(() => {
+    const proteinG = Math.round(userProfile.weight * 2);
+    const fatG = Math.round(userProfile.weight * 1);
+    const proteinCal = proteinG * 4;
+    const fatCal = fatG * 9;
+    const carbsCal = targetCalories - proteinCal - fatCal;
+    const carbsG = Math.round(Math.max(0, carbsCal / 4));
+    return { protein: proteinG, carbs: carbsG, fat: fatG };
+  }, [userProfile.weight, targetCalories]);
+
+  const consumedMacros = useMemo(() => {
+    return meals.reduce((acc, m) => ({
+      calories: acc.calories + (Number(m.calories) || 0),
+      protein: acc.protein + (Number(m.protein) || 0),
+      carbs: acc.carbs + (Number(m.carbs) || 0),
+      fat: acc.fat + (Number(m.fat) || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }, [meals]);
+
+  const waterTarget = Math.round(userProfile.weight * 0.035 * 4); // glasses (250ml each)
+
+  const addMeal = () => {
+    if (!mealForm.name) return;
+    const p = Number(mealForm.protein) || 0;
+    const c = Number(mealForm.carbs) || 0;
+    const f = Number(mealForm.fat) || 0;
+    const autoCal = p * 4 + c * 4 + f * 9;
+    const finalCal = mealForm.calories ? Number(mealForm.calories) : autoCal;
+    setMeals([...meals, { ...mealForm, calories: finalCal, protein: p, carbs: c, fat: f, id: generateId() }]);
+    setMealForm({ name: "", calories: "", protein: "", carbs: "", fat: "" });
+  };
+
+  const addFoodFromDB = (food, grams) => {
+    const ratio = grams / 100;
+    const cal = Math.round(food.cal * ratio);
+    const p = Math.round(food.p * ratio * 10) / 10;
+    const c = Math.round(food.c * ratio * 10) / 10;
+    const f = Math.round(food.f * ratio * 10) / 10;
+    setMeals([...meals, { name: `${food.name} (${grams}g)`, calories: cal, protein: p, carbs: c, fat: f, id: generateId() }]);
+    setShowFoodPicker(false);
+    setFoodGrams(100);
+    setFoodSearch("");
+  };
+
+  const getSuggestions = useMemo(() => {
+    const remP = macroTargets.protein - consumedMacros.protein;
+    const remC = macroTargets.carbs - consumedMacros.carbs;
+    const remF = macroTargets.fat - consumedMacros.fat;
+    const suggestions = [];
+    if (remP > 20) {
+      const proFoods = FOOD_DB.filter(f => f.p >= 15 && f.cat === "بروتين");
+      proFoods.slice(0, 3).forEach(f => {
+        const grams = Math.round(Math.min(250, (remP / f.p) * 100));
+        suggestions.push({ food: f, grams, reason: `يغطي ${Math.round(f.p * grams / 100)}g بروتين` });
+      });
+    }
+    if (remC > 30) {
+      const carbFoods = FOOD_DB.filter(f => f.c >= 15 && f.cat === "كارب");
+      carbFoods.slice(0, 2).forEach(f => {
+        const grams = Math.round(Math.min(300, (remC / f.c) * 100));
+        suggestions.push({ food: f, grams, reason: `يغطي ${Math.round(f.c * grams / 100)}g كارب` });
+      });
+    }
+    if (remF > 10) {
+      const fatFoods = FOOD_DB.filter(f => f.f >= 10 && f.cat === "دهون");
+      fatFoods.slice(0, 1).forEach(f => {
+        const grams = Math.round(Math.min(50, (remF / f.f) * 100));
+        suggestions.push({ food: f, grams, reason: `يغطي ${Math.round(f.f * grams / 100)}g دهون` });
+      });
+    }
+    return suggestions;
+  }, [macroTargets, consumedMacros]);
+
+  const deleteMeal = (id) => {
+    setMeals(meals.filter(m => m.id !== id));
+  };
+
+  const resetDayMeals = () => {
+    setMeals([]);
+    setWaterCount(0);
+  };
+
+  const saveExerciseLog = (data) => {
+    setWorkoutLog([...workoutLog, { ...data, timestamp: Date.now() }]);
+    setSelectedExercise(null);
+  };
+
+  const endWorkout = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const musclesWorked = [...new Set(workoutLog.map(l => {
+      for (const [k, v] of Object.entries(EXERCISES_DB)) {
+        if (v.exercises.find(e => e.id === l.exercise.id)) return v.name;
+      }
+      return "أخرى";
+    }))];
+    setWorkoutHistory(prev => ({
+      ...prev,
+      [today]: { muscles: musclesWorked, duration: Math.round(workoutTime / 60), exercises: workoutLog.length }
+    }));
+    setWorkoutActive(false);
+    setWorkoutTime(0);
+    setTotalWorkouts(t => t + 1);
+    setStreak(s => s + 1);
+    setXp(x => x + workoutLog.length * 50 + 100);
+    setActiveMode(false);
+    setCurrentExIndex(0);
+    setWorkoutLog([]);
+    setSelectedMuscle(null);
+  };
+
+  // AI Smart Suggestion
+  const getAISuggestion = useMemo(() => {
+    const today = new Date();
+    const recentMuscles = {};
+    for (let i = 1; i <= 5; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      if (workoutHistory[key]) {
+        workoutHistory[key].muscles.forEach(m => {
+          recentMuscles[m] = (recentMuscles[m] || 0) + (6 - i);
+        });
+      }
+    }
+    const allMuscles = Object.values(EXERCISES_DB).map(m => m.name);
+    const scored = allMuscles.map(m => ({ name: m, score: recentMuscles[m] || 0 }));
+    scored.sort((a, b) => a.score - b.score);
+    const suggested = scored.slice(0, 3).map(s => s.name);
+    const restDays = Object.keys(workoutHistory).length === 0 ? 99 :
+      Math.floor((today - new Date(Object.keys(workoutHistory).sort().pop())) / 86400000);
+    const needsRest = restDays === 0 || (streak >= 5 && restDays <= 0);
+    return { suggested, needsRest, restDays };
+  }, [workoutHistory, streak]);
+
+  // XP Level System
+  const getLevel = (xp) => {
+    if (xp < 500) return { name: "مبتدئ", icon: "🌱", next: 500, color: "#44DD44" };
+    if (xp < 1500) return { name: "متوسط", icon: "💪", next: 1500, color: "#00D4FF" };
+    if (xp < 3000) return { name: "متقدم", icon: "⚡", next: 3000, color: "#FF8C00" };
+    if (xp < 5000) return { name: "محترف", icon: "🔥", next: 5000, color: "#FF3E3E" };
+    return { name: "وحش", icon: "💀", next: 10000, color: "#DD44DD" };
+  };
+  const level = getLevel(xp);
+
+  // ===== RENDER PAGES =====
+
+  // HOME PAGE
+  const renderHome = () => {
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const calDays = [];
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    for (let w = -1; w <= 2; w++) {
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + w * 7 + d);
+        const key = date.toISOString().split('T')[0];
+        calDays.push({ date, key, isToday: key === todayStr, hasWorkout: !!workoutHistory[key], data: workoutHistory[key] });
+      }
+    }
+
+    const weekChart = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      weekChart.push({ day: WEEK_DAYS[d.getDay()], data: workoutHistory[key] });
+    }
+
+    const quote = QUOTES[Math.floor(Date.now() / 60000) % QUOTES.length];
+
+    return (
+    <div className="fade-in">
+      {/* Level Bar */}
+      <div className="level-bar">
+        <div className="level-icon" style={{ background: `${level.color}20`, border: `1px solid ${level.color}40` }}>
+          {level.icon}
+        </div>
+        <div className="level-info">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontWeight: 800, fontSize: 15, color: level.color }}>{level.name}</span>
+            <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{xp} / {level.next} XP</span>
+          </div>
+          <div className="progress-bar" style={{ marginTop: 6, height: 6 }}>
+            <div className="progress-fill" style={{ width: `${(xp / level.next) * 100}%`, background: `linear-gradient(90deg, ${level.color}, ${level.color}88)` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, margin: "10px 16px" }}>
+        <div className="streak-fire">🔥 {streak} يوم متتالي</div>
+        <div className="streak-fire" style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,100,255,0.15))", borderColor: "rgba(0,212,255,0.3)", color: "#00D4FF" }}>
+          🏋️ {totalWorkouts} تمرين
+        </div>
+      </div>
+
+      {/* AI Smart Assistant */}
+      <div className="ai-card">
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <span style={{ fontSize: 22 }}>🤖</span>
+          <span style={{ fontWeight: 800, fontSize: 15 }}>المساعد الذكي</span>
+        </div>
+        {getAISuggestion.needsRest ? (
+          <div>
+            <div style={{ fontSize: 14, color: "#FFaa00", fontWeight: 700, marginBottom: 6 }}>😴 يوم راحة مقترح!</div>
+            <div style={{ fontSize: 13, color: "var(--text-dim)", lineHeight: 1.7 }}>
+              لعبت {streak} أيام متتالية — جسمك يحتاج تعافي عشان العضلات تنمو. خذ يوم راحة اليوم!
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 8, lineHeight: 1.6 }}>
+              بناءً على آخر تمارينك، العضلات اللي تحتاج تشتغل عليها اليوم:
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+              {getAISuggestion.suggested.map((m, i) => (
+                <span key={i} style={{ padding: "6px 14px", background: "rgba(255,62,62,0.1)", border: "1px solid rgba(255,62,62,0.3)", borderRadius: 20, fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>
+                  {m}
+                </span>
+              ))}
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={() => { setPage("workout"); if (!workoutActive) setWorkoutActive(true); }}>
+              🏋️ يلا نبدأ!
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Macros Stats */}
+      <div className="stat-grid">
+        <div className="stat-box card-glow">
+          <div className="stat-val" style={{ color: "#FF3E3E" }}>{targetCalories}</div>
+          <div className="stat-label">السعرات المستهدفة</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: targetCalories - consumedMacros.calories >= 0 ? "#00DD66" : "#FF3E3E" }}>{targetCalories - consumedMacros.calories}</div>
+          <div className="stat-label">سعرات متبقية</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, marginTop: 2 }}>
+            {targetCalories > 0 ? Math.round((consumedMacros.calories / targetCalories) * 100) : 0}% مكتمل
+          </div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: "#FF8C00" }}>{Math.max(0, macroTargets.protein - consumedMacros.protein)}g</div>
+          <div className="stat-label">بروتين متبقي</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, marginTop: 2 }}>{macroTargets.protein > 0 ? Math.round((consumedMacros.protein / macroTargets.protein) * 100) : 0}%</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: "#00D4FF" }}>{Math.max(0, macroTargets.carbs - consumedMacros.carbs)}g</div>
+          <div className="stat-label">كارب متبقي</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, marginTop: 2 }}>{macroTargets.carbs > 0 ? Math.round((consumedMacros.carbs / macroTargets.carbs) * 100) : 0}%</div>
+        </div>
+      </div>
+      <div className="stat-grid">
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: "#DD44DD" }}>{Math.max(0, macroTargets.fat - consumedMacros.fat)}g</div>
+          <div className="stat-label">دهون متبقي</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, marginTop: 2 }}>{macroTargets.fat > 0 ? Math.round((consumedMacros.fat / macroTargets.fat) * 100) : 0}%</div>
+        </div>
+        <div className="stat-box">
+          <div className="stat-val" style={{ color: "#00D4FF" }}>{waterCount}/{waterTarget}</div>
+          <div className="stat-label">اكواب ماء</div>
+          <div style={{ fontSize: 11, color: "var(--accent2)", fontWeight: 700, marginTop: 2 }}>{waterTarget > 0 ? Math.round((waterCount / waterTarget) * 100) : 0}%</div>
+        </div>
+      </div>
+
+      {/* Macros Progress */}
+      <div className="card" style={{ margin: "8px 16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={{ fontWeight: 800, fontSize: 15 }}>📊 نسبة تقفيل الاحتياج</span>
+          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>{consumedMacros.calories} / {targetCalories} ({targetCalories > 0 ? Math.round((consumedMacros.calories / targetCalories) * 100) : 0}%)</span>
+        </div>
+        {[
+          { name: "بروتين", current: consumedMacros.protein, target: macroTargets.protein, color: "#FF3E3E", unit: "جم" },
+          { name: "كارب", current: consumedMacros.carbs, target: macroTargets.carbs, color: "#FF8C00", unit: "جم" },
+          { name: "دهون", current: consumedMacros.fat, target: macroTargets.fat, color: "#00D4FF", unit: "جم" },
+        ].map(m => {
+          const pct = m.target > 0 ? Math.round((m.current / m.target) * 100) : 0;
+          const remaining = Math.max(0, m.target - m.current);
+          return (
+          <div className="macro-bar" key={m.name}>
+            <div className="macro-header">
+              <span className="macro-name">{m.name} <span style={{ fontSize: 11, color: "var(--accent2)" }}>({pct}%)</span></span>
+              <span className="macro-val">متبقي {remaining} {m.unit} | {m.current}/{m.target}</span>
+            </div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{
+                width: `${Math.min(100, pct)}%`,
+                background: `linear-gradient(90deg, ${m.color}, ${m.color}88)`
+              }} />
+            </div>
+          </div>
+          );
+        })}
+      </div>
+
+      {/* Calendar */}
+      <div className="section-title"><div className="icon">🗓️</div> تقويم التمارين</div>
+      <div style={{ padding: "0 16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4, textAlign: "center" }}>
+          {WEEK_DAYS.map(d => <div key={d} style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600 }}>{d.slice(0, 3)}</div>)}
+        </div>
+        <div className="cal-grid">
+          {calDays.map((cd, i) => (
+            <div key={i} className={`cal-day ${cd.hasWorkout ? 'workout' : 'rest'} ${cd.isToday ? 'today' : ''}`}>
+              <span style={{ fontSize: 12 }}>{cd.date.getDate()}</span>
+              {cd.hasWorkout && <div className="cal-dot" style={{ background: "#FF3E3E" }} />}
+              {cd.isToday && !cd.hasWorkout && <div className="cal-dot" style={{ background: "var(--accent3)" }} />}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Weekly Activity Chart */}
+      <div className="chart-container">
+        <div style={{ fontWeight: 800, marginBottom: 10, fontSize: 14 }}>📊 نشاط الاسبوع</div>
+        <div className="chart-bars">
+          {weekChart.map((d, i) => {
+            const h = d.data ? Math.max(15, Math.min(100, d.data.duration * 1.2)) : 8;
+            return (
+              <div className="chart-col" key={i} style={{ height: "100%" }}>
+                <div className="chart-val">{d.data ? `${d.data.duration}د` : ""}</div>
+                <div style={{ flex: 1, display: "flex", alignItems: "flex-end", width: "100%" }}>
+                  <div className="chart-bar-v" style={{
+                    height: `${h}%`,
+                    background: d.data ? "linear-gradient(to top, #FF3E3E, #FF8C00)" : "var(--bg-input)",
+                    border: d.data ? "none" : "1px solid var(--border)"
+                  }} />
+                </div>
+                <div className="chart-label">{d.day.slice(0, 3)}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div style={{ padding: "8px 16px", display: "flex", gap: 8 }}>
+        <button className="btn btn-primary btn-full" style={{ flex: 2 }} onClick={() => { setPage("workout"); if (!workoutActive) setWorkoutActive(true); }}>
+          🏋️ ابدأ التمرين
+        </button>
+        <button className="btn btn-secondary" onClick={() => setShowTimer(true)}>⏱️</button>
+      </div>
+
+      {/* Badges */}
+      <div className="section-title"><div className="icon">🏆</div> الانجازات</div>
+      <div style={{ padding: "0 16px", display: "flex", flexWrap: "wrap" }}>
+        <div className="badge"><span className="badge-icon">💪</span> اول تمرين</div>
+        <div className="badge"><span className="badge-icon">🔥</span> اسبوع كامل</div>
+        <div className="badge"><span className="badge-icon">🎯</span> هدف البروتين</div>
+        <div className="badge"><span className="badge-icon">💧</span> ترطيب مثالي</div>
+        <div className="badge"><span className="badge-icon">⚡</span> PR جديد!</div>
+        <div className="badge"><span className="badge-icon">🏆</span> شهر كامل</div>
+      </div>
+
+      {showTimer && <RestTimer onClose={() => setShowTimer(false)} />}
+    </div>
+    );
+  };
+
+  // WORKOUT PAGE
+  const renderWorkout = () => (
+    <div className="fade-in">
+      <div style={{ padding: "10px 16px" }}>
+        <button className="btn btn-secondary btn-sm" onClick={() => { setPage("home"); setSelectedMuscle(null); }}>
+          → الرئيسية
+        </button>
+      </div>
+      {workoutActive && (
+        <div className="workout-timer-bar">
+          <span>⏱️</span>
+          <span>{formatTime(workoutTime)}</span>
+          <span style={{ fontSize: 12, color: "var(--text-dim)" }}>مدة التمرين</span>
+        </div>
+      )}
+
+      {!selectedMuscle ? (
+        <>
+          <div className="section-title"><div className="icon">💪</div> اختر العضلة</div>
+          {Object.entries(EXERCISES_DB).map(([key, muscle]) => (
+            <div className="muscle-card" key={key} onClick={() => setSelectedMuscle(key)}>
+              <div className="muscle-icon" style={{ background: `${muscle.color}20`, border: `1px solid ${muscle.color}40` }}>
+                {muscle.icon}
+              </div>
+              <div className="muscle-info">
+                <div className="muscle-name">{muscle.name}</div>
+                <div className="muscle-count">{muscle.exercises.length} تمارين متاحة</div>
+              </div>
+              <span style={{ color: "var(--text-muted)", fontSize: 20 }}>←</span>
+            </div>
+          ))}
+
+          {workoutLog.length > 0 && (
+            <>
+              <div className="section-title"><div className="icon">📋</div> تمارين مسجلة ({workoutLog.length})</div>
+              {workoutLog.map((log, i) => (
+                <div className="card" key={i} style={{ margin: "6px 16px", padding: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: 700 }}>{log.exercise.name}</span>
+                    <span style={{ fontSize: 12, color: "var(--success)" }}>✓ {log.sets.filter(s => s.done).length} مجموعات</span>
+                  </div>
+                  {log.rpe && <span style={{ fontSize: 12, color: "var(--text-dim)" }}>RPE: {log.rpe}</span>}
+                </div>
+              ))}
+            </>
+          )}
+
+          {workoutActive && (
+            <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 8 }}>
+              {workoutLog.length > 0 && (
+                <button className="btn btn-primary btn-full" style={{ background: "linear-gradient(135deg, #FF8C00, #FF3E3E)" }} onClick={() => setActiveMode(true)}>
+                  ⚡ وضع التمرين النشط
+                </button>
+              )}
+              <button className="btn btn-danger btn-full" onClick={endWorkout}>
+                🏁 انهاء التمرين
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <>
+          <div style={{ padding: "10px 16px" }}>
+            <button className="btn btn-secondary btn-sm" onClick={() => setSelectedMuscle(null)}>
+              → رجوع
+            </button>
+          </div>
+          <div className="section-title">
+            <div className="icon">{EXERCISES_DB[selectedMuscle].icon}</div>
+            تمارين {EXERCISES_DB[selectedMuscle].name}
+          </div>
+          {EXERCISES_DB[selectedMuscle].exercises.map(ex => (
+            <div className="exercise-row" key={ex.id} style={{ margin: "0 16px" }}
+              onClick={() => setSelectedExercise(ex)}>
+              <div className="exercise-check" style={{ borderColor: EXERCISES_DB[selectedMuscle].color }}>
+                {workoutLog.find(l => l.exercise.id === ex.id) && (
+                  <span style={{ color: "var(--success)" }}>✓</span>
+                )}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div className="exercise-name">{ex.name}</div>
+                <div style={{ fontSize: 12, color: "var(--text-dim)" }}>{ex.sets} × {ex.reps}</div>
+              </div>
+              <span className="exercise-type">{ex.type}</span>
+            </div>
+          ))}
+        </>
+      )}
+
+      {selectedExercise && (
+        <SetLogger exercise={selectedExercise} onSave={saveExerciseLog} onClose={() => setSelectedExercise(null)} />
+      )}
+
+      {/* Active Workout Mode Overlay */}
+      {activeMode && workoutLog.length > 0 && (
+        <div className="active-mode">
+          <div className="active-header">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setActiveMode(false)}>✕ اغلاق</button>
+              <div className="active-timer">{formatTime(workoutTime)}</div>
+              <button className="btn btn-danger btn-sm" onClick={endWorkout}>🏁 انهاء</button>
+            </div>
+            <div className="active-quote">{QUOTES[Math.floor(workoutTime / 30) % QUOTES.length]}</div>
+          </div>
+
+          {/* Exercise Progress Dots */}
+          <div className="active-progress">
+            {workoutLog.map((_, i) => (
+              <div key={i} className={`active-dot ${i < currentExIndex ? 'done' : ''} ${i === currentExIndex ? 'current' : ''}`} onClick={() => setCurrentExIndex(i)} />
+            ))}
+          </div>
+
+          {/* Current Exercise */}
+          {workoutLog[currentExIndex] && (
+            <div className="active-exercise-card">
+              <div style={{ fontSize: 12, color: "var(--text-dim)", marginBottom: 4 }}>
+                تمرين {currentExIndex + 1} من {workoutLog.length}
+              </div>
+              <div className="active-exercise-name">{workoutLog[currentExIndex].exercise.name}</div>
+              <div className="active-exercise-detail">{workoutLog[currentExIndex].exercise.type}</div>
+              <div style={{ marginTop: 16 }}>
+                {workoutLog[currentExIndex].sets.filter(s => s.done).map((s, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "center", gap: 20, padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <span style={{ color: "var(--accent)", fontWeight: 800 }}>Set {s.num}</span>
+                    <span style={{ color: "var(--text)" }}>{s.weight} كجم</span>
+                    <span style={{ color: "var(--accent2)" }}>{s.reps} تكرار</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 12, display: "flex", gap: 8, justifyContent: "center" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Bebas Neue'", fontSize: 32, color: "var(--accent)" }}>
+                    {workoutLog[currentExIndex].sets.filter(s => s.done).length}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>مجموعات</div>
+                </div>
+                <div style={{ width: 1, background: "var(--border)", margin: "0 12px" }} />
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Bebas Neue'", fontSize: 32, color: "var(--accent2)" }}>
+                    {workoutLog[currentExIndex].sets.filter(s => s.done).reduce((a, s) => a + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0)}
+                  </div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>حجم كلي</div>
+                </div>
+                {workoutLog[currentExIndex].rpe && (
+                  <>
+                    <div style={{ width: 1, background: "var(--border)", margin: "0 12px" }} />
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontFamily: "'Bebas Neue'", fontSize: 32, color: "var(--accent3)" }}>
+                        {workoutLog[currentExIndex].rpe}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>RPE</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Nav Buttons */}
+          <div style={{ display: "flex", gap: 8, padding: "12px 20px" }}>
+            <button className="btn btn-secondary btn-full" disabled={currentExIndex === 0} onClick={() => setCurrentExIndex(i => i - 1)}> السابق →</button>
+            <button className="btn btn-primary btn-full" disabled={currentExIndex >= workoutLog.length - 1} onClick={() => setCurrentExIndex(i => i + 1)}>← التالي</button>
+          </div>
+
+          {/* Total Summary */}
+          <div style={{ margin: "8px 20px", padding: 16, background: "var(--bg-card)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+            <div style={{ fontWeight: 800, marginBottom: 8, textAlign: "center" }}>📊 ملخص التمرين</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, textAlign: "center" }}>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue'", fontSize: 28, color: "var(--accent)" }}>{workoutLog.length}</div>
+                <div style={{ fontSize: 11, color: "var(--text-dim)" }}>تمارين</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue'", fontSize: 28, color: "var(--accent2)" }}>
+                  {workoutLog.reduce((a, l) => a + l.sets.filter(s => s.done).length, 0)}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-dim)" }}>مجموعات</div>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Bebas Neue'", fontSize: 28, color: "var(--accent3)" }}>
+                  {workoutLog.reduce((a, l) => a + l.sets.filter(s => s.done).reduce((b, s) => b + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0), 0)}
+                </div>
+                <div style={{ fontSize: 11, color: "var(--text-dim)" }}>حجم كلي</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // NUTRITION PAGE
+  const renderNutrition = () => {
+    const remainingCals = targetCalories - consumedMacros.calories;
+    const remainingProtein = macroTargets.protein - consumedMacros.protein;
+    const remainingCarbs = macroTargets.carbs - consumedMacros.carbs;
+    const remainingFat = macroTargets.fat - consumedMacros.fat;
+
+    return (
+      <div className="fade-in">
+        <div style={{ padding: "10px 16px" }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => setPage("home")}>
+            → الرئيسية
+          </button>
+        </div>
+        <div className="tabs">
+          <button className={`tab ${nutritionTab === "meals" ? "active" : ""}`} onClick={() => setNutritionTab("meals")}>🍽️ الوجبات</button>
+          <button className={`tab ${nutritionTab === "calc" ? "active" : ""}`} onClick={() => setNutritionTab("calc")}>🧮 الحاسبة</button>
+          <button className={`tab ${nutritionTab === "water" ? "active" : ""}`} onClick={() => setNutritionTab("water")}>💧 الماء</button>
+        </div>
+
+        {nutritionTab === "meals" && (
+          <>
+            {/* Remaining Summary */}
+            <div className="card card-glow" style={{ margin: "10px 16px" }}>
+              <div style={{ textAlign: "center", marginBottom: 12 }}>
+                <span style={{ fontSize: 14, color: "var(--text-dim)" }}>المتبقي لتقفيل اليوم</span>
+                <div style={{ fontFamily: "'Bebas Neue'", fontSize: 48, color: remainingCals >= 0 ? "#00DD66" : "#FF3E3E", letterSpacing: 2 }}>
+                  {remainingCals}
+                </div>
+                <span style={{ fontSize: 13, color: "var(--text-dim)" }}>سعرة حرارية ({targetCalories > 0 ? Math.round((consumedMacros.calories / targetCalories) * 100) : 0}% مكتمل)</span>
+              </div>
+              <div className="progress-bar" style={{ marginBottom: 12 }}>
+                <div className="progress-fill" style={{ width: `${Math.min(100, targetCalories > 0 ? (consumedMacros.calories / targetCalories) * 100 : 0)}%`, background: "linear-gradient(90deg, #00DD66, #00AA44)" }} />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, textAlign: "center" }}>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#FF3E3E", fontSize: 18 }}>{Math.max(0, remainingProtein)}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>بروتين متبقي</div>
+                  <div style={{ fontSize: 10, color: "var(--accent2)" }}>{macroTargets.protein > 0 ? Math.round((consumedMacros.protein / macroTargets.protein) * 100) : 0}%</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#FF8C00", fontSize: 18 }}>{Math.max(0, remainingCarbs)}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>كارب متبقي</div>
+                  <div style={{ fontSize: 10, color: "var(--accent2)" }}>{macroTargets.carbs > 0 ? Math.round((consumedMacros.carbs / macroTargets.carbs) * 100) : 0}%</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#00D4FF", fontSize: 18 }}>{Math.max(0, remainingFat)}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>دهون متبقي</div>
+                  <div style={{ fontSize: 10, color: "var(--accent2)" }}>{macroTargets.fat > 0 ? Math.round((consumedMacros.fat / macroTargets.fat) * 100) : 0}%</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Food Picker Button */}
+            <div style={{ padding: "0 16px", display: "flex", gap: 8 }}>
+              <button className="btn btn-primary btn-full" onClick={() => setShowFoodPicker(true)}>
+                🍽️ اختر من قائمة الاطعمة
+              </button>
+            </div>
+
+            {/* Food Picker Modal */}
+            {showFoodPicker && (
+              <div className="modal-overlay" onClick={() => setShowFoodPicker(false)}>
+                <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxHeight: "90vh" }}>
+                  <div className="modal-handle" />
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h3 style={{ fontWeight: 800, fontSize: 18 }}>🍽️ قائمة الاطعمة</h3>
+                    <button className="btn btn-secondary btn-sm" style={{ padding: "6px 12px" }} onClick={() => setShowFoodPicker(false)}>✕</button>
+                  </div>
+                  <input className="input" placeholder="ابحث عن طعام..." value={foodSearch}
+                    onChange={e => setFoodSearch(e.target.value)} style={{ marginBottom: 8 }} />
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 12 }}>
+                    {FOOD_CATEGORIES.map(cat => (
+                      <button key={cat} className={`btn btn-sm ${foodCat === cat ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ padding: "4px 10px", fontSize: 11 }}
+                        onClick={() => setFoodCat(cat)}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
+                    {FOOD_DB
+                      .filter(f => (foodCat === "الكل" || f.cat === foodCat) && (!foodSearch || f.name.includes(foodSearch)))
+                      .map(food => (
+                        <div key={food.id} style={{
+                          padding: 10, marginBottom: 6, background: "var(--bg-input)",
+                          borderRadius: 10, border: "1px solid var(--border)"
+                        }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                            <span style={{ fontSize: 20 }}>{food.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 700, fontSize: 14 }}>{food.name}</div>
+                              <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                                لكل 100 جم: {food.cal} سعرة | ب {food.p}g | ك {food.c}g | د {food.f}g
+                              </div>
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <input className="set-input" type="number" value={foodGrams}
+                              onChange={e => setFoodGrams(Number(e.target.value))}
+                              style={{ width: 70 }} />
+                            <span style={{ fontSize: 12, color: "var(--text-dim)" }}>جم</span>
+                            <div style={{ flex: 1, fontSize: 11, color: "var(--accent2)", textAlign: "center" }}>
+                              = {Math.round(food.cal * foodGrams / 100)} سعرة | ب {Math.round(food.p * foodGrams / 10) / 10}g
+                            </div>
+                            <button className="btn btn-primary btn-sm" style={{ padding: "6px 12px" }}
+                              onClick={() => addFoodFromDB(food, foodGrams)}>
+                              + اضف
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Manual Meal Entry */}
+            <div className="card" style={{ margin: "10px 16px" }}>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>✏️ ادخال يدوي (السعرات والدهون تنحسب تلقائي)</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <input className="input" placeholder="اسم الوجبة" value={mealForm.name}
+                  onChange={e => setMealForm({ ...mealForm, name: e.target.value })} />
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8 }}>
+                  <div>
+                    <div className="input-label">بروتين (جم)</div>
+                    <input className="input" type="number" placeholder="0" value={mealForm.protein}
+                      onChange={e => {
+                        const p = Number(e.target.value) || 0;
+                        const c = Number(mealForm.carbs) || 0;
+                        const f = Number(mealForm.fat) || 0;
+                        setMealForm({ ...mealForm, protein: e.target.value, calories: String(p * 4 + c * 4 + f * 9) });
+                      }} />
+                  </div>
+                  <div>
+                    <div className="input-label">كارب (جم)</div>
+                    <input className="input" type="number" placeholder="0" value={mealForm.carbs}
+                      onChange={e => {
+                        const p = Number(mealForm.protein) || 0;
+                        const c = Number(e.target.value) || 0;
+                        const f = Number(mealForm.fat) || 0;
+                        setMealForm({ ...mealForm, carbs: e.target.value, calories: String(p * 4 + c * 4 + f * 9) });
+                      }} />
+                  </div>
+                  <div>
+                    <div className="input-label">دهون (جم)</div>
+                    <input className="input" type="number" placeholder="0" value={mealForm.fat}
+                      onChange={e => {
+                        const p = Number(mealForm.protein) || 0;
+                        const c = Number(mealForm.carbs) || 0;
+                        const f = Number(e.target.value) || 0;
+                        setMealForm({ ...mealForm, fat: e.target.value, calories: String(p * 4 + c * 4 + f * 9) });
+                      }} />
+                  </div>
+                  <div>
+                    <div className="input-label">السعرات (تلقائي)</div>
+                    <input className="input" type="number" placeholder="تلقائي" value={mealForm.calories}
+                      style={{ background: "rgba(0,221,102,0.05)", borderColor: "rgba(0,221,102,0.2)" }}
+                      onChange={e => setMealForm({ ...mealForm, calories: e.target.value })} />
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-full" onClick={addMeal}>اضافة ✓</button>
+              </div>
+            </div>
+
+            {/* Smart Suggestions */}
+            {getSuggestions.length > 0 && meals.length > 0 && (
+              <div className="card" style={{ margin: "10px 16px", border: "1px solid rgba(255,140,0,0.3)" }}>
+                <div style={{ fontWeight: 800, marginBottom: 10, fontSize: 15, color: "var(--accent2)" }}>💡 اقتراحات لتقفيل يومك</div>
+                {getSuggestions.map((s, i) => (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: 10, marginBottom: 6, background: "var(--bg-input)",
+                    borderRadius: 8, border: "1px solid var(--border)"
+                  }}>
+                    <span style={{ fontSize: 20 }}>{s.food.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{s.food.name} ({s.grams}g)</div>
+                      <div style={{ fontSize: 11, color: "var(--accent2)" }}>{s.reason}</div>
+                    </div>
+                    <button className="btn btn-primary btn-sm" style={{ padding: "5px 10px", fontSize: 11 }}
+                      onClick={() => addFoodFromDB(s.food, s.grams)}>
+                      + اضف
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Meals List */}
+            {meals.length > 0 && (
+              <div style={{ padding: "0 16px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <span style={{ fontWeight: 800 }}>وجبات اليوم ({meals.length})</span>
+                  <button className="btn btn-danger btn-sm" onClick={resetDayMeals}>🗑️ حذف الكل (يوم جديد)</button>
+                </div>
+                {meals.map(m => (
+                  <div className="meal-entry" key={m.id}>
+                    <div style={{ flex: 1 }}>
+                      <div className="meal-name">{m.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                        بروتين: {m.protein || 0}g | كارب: {m.carbs || 0}g | دهون: {m.fat || 0}g
+                      </div>
+                    </div>
+                    <span className="meal-cals">{m.calories} سعرة</span>
+                    <button className="delete-btn" onClick={() => deleteMeal(m.id)}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {nutritionTab === "calc" && (
+          <div className="card" style={{ margin: "10px 16px" }}>
+            <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 16 }}>🧮 حاسبة الاحتياج اليومي</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <div className="input-label">الوزن (كجم)</div>
+                <input className="input" type="number" value={userProfile.weight}
+                  onChange={e => setUserProfile({ ...userProfile, weight: Number(e.target.value) })} />
+              </div>
+              <div>
+                <div className="input-label">الطول (سم)</div>
+                <input className="input" type="number" value={userProfile.height}
+                  onChange={e => setUserProfile({ ...userProfile, height: Number(e.target.value) })} />
+              </div>
+              <div>
+                <div className="input-label">العمر</div>
+                <input className="input" type="number" value={userProfile.age}
+                  onChange={e => setUserProfile({ ...userProfile, age: Number(e.target.value) })} />
+              </div>
+              <div>
+                <div className="input-label">الجنس</div>
+                <select className="input" value={userProfile.gender}
+                  onChange={e => setUserProfile({ ...userProfile, gender: e.target.value })}>
+                  <option value="male">ذكر</option>
+                  <option value="female">انثى</option>
+                </select>
+              </div>
+              <div>
+                <div className="input-label">مستوى النشاط</div>
+                <select className="input" value={userProfile.activity}
+                  onChange={e => setUserProfile({ ...userProfile, activity: e.target.value })}>
+                  <option value="sedentary">خامل (مكتبي)</option>
+                  <option value="light">خفيف (1-3 ايام)</option>
+                  <option value="moderate">متوسط (3-5 ايام)</option>
+                  <option value="active">نشيط (6-7 ايام)</option>
+                  <option value="very_active">نشيط جدا (رياضي)</option>
+                </select>
+              </div>
+              <div>
+                <div className="input-label">الهدف</div>
+                <select className="input" value={userProfile.goal}
+                  onChange={e => setUserProfile({ ...userProfile, goal: e.target.value })}>
+                  <option value="cut">تنشيف (خسارة دهون)</option>
+                  <option value="maintain">ثبات</option>
+                  <option value="bulk">تضخيم (بناء عضل)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 20, padding: 16, background: "var(--bg-input)", borderRadius: 12, textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 4 }}>BMR (معدل الايض)</div>
+              <div style={{ fontFamily: "'Bebas Neue'", fontSize: 28, color: "var(--accent2)" }}>{Math.round(calcBMR)} سعرة</div>
+              <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 12, marginBottom: 4 }}>TDEE (الاحتياج الكلي)</div>
+              <div style={{ fontFamily: "'Bebas Neue'", fontSize: 28, color: "var(--accent3)" }}>{tdee} سعرة</div>
+              <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 12, marginBottom: 4 }}>السعرات المستهدفة</div>
+              <div style={{ fontFamily: "'Bebas Neue'", fontSize: 36, color: "var(--accent)" }}>{targetCalories} سعرة</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginTop: 16, textAlign: "center" }}>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#FF3E3E" }}>{macroTargets.protein}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>بروتين</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#FF8C00" }}>{macroTargets.carbs}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>كارب</div>
+                </div>
+                <div>
+                  <div style={{ fontWeight: 800, color: "#00D4FF" }}>{macroTargets.fat}g</div>
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>دهون</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {nutritionTab === "water" && (
+          <div className="card" style={{ margin: "10px 16px", textAlign: "center" }}>
+            <div style={{ fontWeight: 800, marginBottom: 8, fontSize: 16 }}>💧 تتبع الماء</div>
+            <div style={{ fontSize: 13, color: "var(--text-dim)", marginBottom: 16 }}>
+              الهدف: {waterTarget} كوب (250 مل لكل كوب)
+            </div>
+            <div style={{ fontFamily: "'Bebas Neue'", fontSize: 56, color: waterCount >= waterTarget ? "#00DD66" : "#00D4FF" }}>
+              {waterCount} / {waterTarget}
+            </div>
+            <div className="progress-bar" style={{ margin: "16px 0" }}>
+              <div className="progress-fill" style={{
+                width: `${Math.min(100, (waterCount / waterTarget) * 100)}%`,
+                background: "linear-gradient(90deg, #0088FF, #00CCFF)"
+              }} />
+            </div>
+            <div className="water-drop">
+              {Array.from({ length: waterTarget }, (_, i) => (
+                <div key={i} className={`drop ${i < waterCount ? 'filled' : ''}`}
+                  onClick={() => setWaterCount(i < waterCount ? i : i + 1)}>
+                  <span>💧</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "center" }}>
+              <button className="btn btn-primary" onClick={() => setWaterCount(Math.min(waterCount + 1, waterTarget + 5))}>
+                + كوب
+              </button>
+              <button className="btn btn-secondary" onClick={() => setWaterCount(Math.max(0, waterCount - 1))}>
+                - كوب
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // BODY PAGE
+  const renderBody = () => {
+    const bmi = userProfile.weight && userProfile.height ? (userProfile.weight / ((userProfile.height / 100) ** 2)).toFixed(1) : 0;
+
+    const addWeight = () => {
+      if (!newWeightInput) return;
+      setBodyWeight([...bodyWeight, { weight: Number(newWeightInput), date: new Date().toLocaleDateString('ar-SA') }]);
+      setUserProfile({ ...userProfile, weight: Number(newWeightInput) });
+      setNewWeightInput("");
+    };
+
+    return (
+      <div className="fade-in">
+        <div style={{ padding: "10px 16px" }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => setPage("home")}>
+            → الرئيسية
+          </button>
+        </div>
+        <div className="tabs">
+          <button className={`tab ${bodyTab === "weight" ? "active" : ""}`} onClick={() => setBodyTab("weight")}>⚖️ الوزن</button>
+          <button className={`tab ${bodyTab === "measure" ? "active" : ""}`} onClick={() => setBodyTab("measure")}>📏 القياسات</button>
+          <button className={`tab ${bodyTab === "stats" ? "active" : ""}`} onClick={() => setBodyTab("stats")}>📊 احصائيات</button>
+        </div>
+
+        {bodyTab === "weight" && (
+          <>
+            <div className="card card-glow" style={{ margin: "10px 16px", textAlign: "center" }}>
+              <div style={{ fontSize: 13, color: "var(--text-dim)" }}>الوزن الحالي</div>
+              <div style={{ fontFamily: "'Bebas Neue'", fontSize: 56, color: "var(--accent)" }}>
+                {userProfile.weight} <span style={{ fontSize: 24, color: "var(--text-dim)" }}>كجم</span>
+              </div>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center", marginTop: 8 }}>
+                <div>
+                  <span style={{ fontSize: 13, color: "var(--text-dim)" }}>BMI: </span>
+                  <span style={{ fontWeight: 700, color: bmi < 25 ? "#00DD66" : bmi < 30 ? "#FFaa00" : "#FF3E3E" }}>{bmi}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="card" style={{ margin: "10px 16px" }}>
+              <div className="input-label">تسجيل وزن جديد</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input className="input" type="number" placeholder="الوزن بالكجم" value={newWeightInput}
+                  onChange={e => setNewWeightInput(e.target.value)} />
+                <button className="btn btn-primary" onClick={addWeight}>حفظ</button>
+              </div>
+            </div>
+
+            {bodyWeight.length > 0 && (
+              <div className="card" style={{ margin: "10px 16px" }}>
+                <div style={{ fontWeight: 800, marginBottom: 12 }}>📈 سجل الوزن</div>
+                <div className="mini-chart">
+                  {bodyWeight.slice(-10).map((w, i) => {
+                    const weights = bodyWeight.slice(-10).map(x => x.weight);
+                    const min = Math.min(...weights) - 2;
+                    const max = Math.max(...weights) + 2;
+                    const h = ((w.weight - min) / (max - min)) * 100;
+                    return (
+                      <div key={i} className="chart-bar"
+                        style={{ height: `${h}%`, background: `linear-gradient(to top, #FF3E3E, #FF8C00)` }}
+                        title={`${w.weight} كجم`} />
+                    );
+                  })}
+                </div>
+                {bodyWeight.slice(-5).reverse().map((w, i) => (
+                  <div key={i} className="measurement-row">
+                    <span style={{ color: "var(--text-dim)", fontSize: 13 }}>{w.date}</span>
+                    <span style={{ fontWeight: 700 }}>{w.weight} كجم</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {bodyTab === "measure" && (
+          <div className="card" style={{ margin: "10px 16px" }}>
+            <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 16 }}>📏 قياسات الجسم (سم)</div>
+            {[
+              { key: "chest", label: "الصدر", icon: "🫁" },
+              { key: "shoulder", label: "الاكتاف", icon: "🏋️" },
+              { key: "arm", label: "الذراع", icon: "💪" },
+              { key: "waist", label: "الخصر", icon: "📐" },
+              { key: "thigh", label: "الفخذ", icon: "🦵" },
+            ].map(m => (
+              <div key={m.key} style={{ marginBottom: 12 }}>
+                <div className="input-label">{m.icon} {m.label}</div>
+                <input className="input" type="number" placeholder="سم"
+                  value={measurements[m.key]}
+                  onChange={e => setMeasurements({ ...measurements, [m.key]: e.target.value })} />
+              </div>
+            ))}
+            <button className="btn btn-primary btn-full" style={{ marginTop: 8 }}>💾 حفظ القياسات</button>
+          </div>
+        )}
+
+        {bodyTab === "stats" && (
+          <>
+            <div className="stat-grid">
+              <div className="stat-box">
+                <div className="stat-val" style={{ color: "#FF3E3E" }}>{totalWorkouts}</div>
+                <div className="stat-label">اجمالي التمارين</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-val" style={{ color: "#FF8C00" }}>{streak}</div>
+                <div className="stat-label">ايام متتالية</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-val" style={{ color: "#00DD66" }}>{workoutLog.length}</div>
+                <div className="stat-label">تمارين اليوم</div>
+              </div>
+              <div className="stat-box">
+                <div className="stat-val" style={{ color: "#00D4FF" }}>{bmi}</div>
+                <div className="stat-label">مؤشر BMI</div>
+              </div>
+            </div>
+
+            <div className="card" style={{ margin: "10px 16px" }}>
+              <div style={{ fontWeight: 800, marginBottom: 12 }}>🗓️ نشاط الاسبوع</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, textAlign: "center" }}>
+                {WEEK_DAYS.map((d, i) => (
+                  <div key={d}>
+                    <div style={{ fontSize: 10, color: "var(--text-dim)", marginBottom: 4 }}>{d}</div>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 8, margin: "0 auto",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: i < 5 ? "rgba(0,221,102,0.2)" : "var(--bg-input)",
+                      border: `1px solid ${i < 5 ? "rgba(0,221,102,0.3)" : "var(--border)"}`,
+                      fontSize: 14
+                    }}>
+                      {i < 5 ? "✓" : ""}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card" style={{ margin: "10px 16px" }}>
+              <div style={{ fontWeight: 800, marginBottom: 12 }}>💡 نصيحة اليوم</div>
+              <p style={{ fontSize: 14, color: "var(--text-dim)", lineHeight: 1.8 }}>
+                لا تنسى تاخذ يوم راحة كل 3-4 ايام تمرين عشان عضلاتك تتعافى وتنمو. التعافي جزء اساسي من البرنامج مو بس التمرين! 🧠💪
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // PROGRAMS PAGE
+  const renderPrograms = () => {
+    return (
+      <div className="fade-in">
+        <div style={{ padding: "10px 16px" }}>
+          <button className="btn btn-secondary btn-sm" onClick={() => { setPage("home"); setSelectedProgram(null); }}>
+            → الرئيسية
+          </button>
+        </div>
+        <div className="section-title"><div className="icon">📋</div> برامج التمرين</div>
+
+        {!selectedProgram ? (
+          <>
+            {Object.entries(SPLIT_TEMPLATES).map(([key, prog]) => (
+              <div className="card" key={key} style={{ margin: "8px 16px", cursor: "pointer" }}
+                onClick={() => setSelectedProgram(key)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16 }}>{prog.name}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 4 }}>
+                      {prog.days.filter(d => d !== "راحة").length} ايام تمرين / اسبوع
+                    </div>
+                  </div>
+                  <span style={{ fontSize: 24 }}>←</span>
+                </div>
+                <div style={{ display: "flex", gap: 4, marginTop: 10 }}>
+                  {prog.days.map((d, i) => (
+                    <div key={i} style={{
+                      flex: 1, textAlign: "center", padding: "6px 2px",
+                      background: d === "راحة" ? "var(--bg-input)" : "rgba(255,62,62,0.1)",
+                      border: `1px solid ${d === "راحة" ? "var(--border)" : "rgba(255,62,62,0.2)"}`,
+                      borderRadius: 6, fontSize: 9, fontWeight: 600,
+                      color: d === "راحة" ? "var(--text-muted)" : "var(--accent)"
+                    }}>
+                      {d === "راحة" ? "😴" : d.substring(0, 4)}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div className="card" style={{ margin: "8px 16px", border: "1px dashed var(--accent)", textAlign: "center", cursor: "pointer", padding: 24 }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>✨</div>
+              <div style={{ fontWeight: 800 }}>انشاء برنامج مخصص</div>
+              <div style={{ fontSize: 12, color: "var(--text-dim)", marginTop: 4 }}>صمم برنامجك الخاص من الصفر</div>
+            </div>
+
+            {/* Training Tips */}
+            <div className="section-title"><div className="icon">📖</div> نصائح تدريبية</div>
+            {[
+              { title: "Progressive Overload", desc: "زد الوزن 2.5-5 كجم كل اسبوع للتمارين المركبة", icon: "📈" },
+              { title: "Deload Week", desc: "كل 4-6 اسابيع خفف الاوزان 40-60% لاسبوع واحد", icon: "🧘" },
+              { title: "حجم التمرين", desc: "10-20 مجموعة لكل عضلة اسبوعيا للنمو الامثل", icon: "📊" },
+              { title: "الراحة بين المجموعات", desc: "2-3 دقائق للمركب، 60-90 ثانية للعزل", icon: "⏱️" },
+            ].map((tip, i) => (
+              <div className="card" key={i} style={{ margin: "6px 16px", padding: 14 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ fontSize: 24 }}>{tip.icon}</span>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 14 }}>{tip.title}</div>
+                    <div style={{ fontSize: 13, color: "var(--text-dim)", marginTop: 4, lineHeight: 1.6 }}>{tip.desc}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          <>
+            <div style={{ padding: "10px 16px" }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setSelectedProgram(null)}>→ رجوع</button>
+            </div>
+            <div className="card" style={{ margin: "10px 16px" }}>
+              <h3 style={{ fontWeight: 800, fontSize: 18, marginBottom: 16 }}>{SPLIT_TEMPLATES[selectedProgram].name}</h3>
+              {SPLIT_TEMPLATES[selectedProgram].days.map((day, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: 12, marginBottom: 6,
+                  background: day === "راحة" ? "var(--bg-input)" : "rgba(255,62,62,0.05)",
+                  borderRadius: 10, border: `1px solid ${day === "راحة" ? "var(--border)" : "rgba(255,62,62,0.15)"}`
+                }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 8,
+                    background: day === "راحة" ? "var(--bg-card)" : "linear-gradient(135deg, #FF3E3E, #CC2200)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: 14, color: "white"
+                  }}>
+                    {day === "راحة" ? "😴" : WEEK_DAYS[i].charAt(0)}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{WEEK_DAYS[i]}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-dim)" }}>{day}</div>
+                  </div>
+                </div>
+              ))}
+              <button className="btn btn-primary btn-full" style={{ marginTop: 16 }}>
+                ✅ تفعيل هذا البرنامج
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // NAV ITEMS
+  const navItems = [
+    { id: "home", icon: "🏠", label: "الرئيسية" },
+    { id: "workout", icon: "🏋️", label: "التمرين" },
+    { id: "nutrition", icon: "🍽️", label: "التغذية" },
+    { id: "body", icon: "📏", label: "الجسم" },
+    { id: "programs", icon: "📋", label: "البرامج" },
+  ];
+
+  return (
+    <>
+      <style>{CSS}</style>
+      <div className="app-bg" />
+      <div className="app-container">
+        <div className="header">
+          <div className="logo-title">BEAST MODE</div>
+          <div className="logo-sub">لا مكان للضعف هنا</div>
+        </div>
+
+        {page === "home" && renderHome()}
+        {page === "workout" && renderWorkout()}
+        {page === "nutrition" && renderNutrition()}
+        {page === "body" && renderBody()}
+        {page === "programs" && renderPrograms()}
+
+        <nav className="nav-bar">
+          {navItems.map(item => (
+            <button key={item.id} className={`nav-item ${page === item.id ? 'active' : ''}`}
+              onClick={() => setPage(item.id)}>
+              <span className="nav-icon">{item.icon}</span>
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    </>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(GymBeastApp));
+</script>
+</body>
+</html>
